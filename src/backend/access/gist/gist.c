@@ -19,6 +19,7 @@
 #include "catalog/pg_collation.h"
 #include "miscadmin.h"
 #include "nodes/execnodes.h"
+#include "storage/predicate.h"
 #include "utils/builtins.h"
 #include "utils/index_selfuncs.h"
 #include "utils/memutils.h"
@@ -70,7 +71,7 @@ gisthandler(PG_FUNCTION_ARGS)
 	amroutine->amsearchnulls = true;
 	amroutine->amstorage = true;
 	amroutine->amclusterable = true;
-	amroutine->ampredlocks = false;
+	amroutine->ampredlocks = true;
 	amroutine->amcanparallel = false;
 	amroutine->amkeytype = InvalidOid;
 
@@ -237,6 +238,8 @@ gistplacetopage(Relation rel, Size freespace, GISTSTATE *giststate,
 		elog(ERROR, "concurrent GiST page split was incomplete");
 
 	*splitinfo = NIL;
+
+	CheckForSerializableConflictIn(rel, NULL, buffer);
 
 	/*
 	 * if isupdate, remove old key: This node's key has been modified, either

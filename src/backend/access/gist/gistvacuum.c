@@ -20,6 +20,7 @@
 #include "miscadmin.h"
 #include "storage/indexfsm.h"
 #include "storage/lmgr.h"
+#include "storage/predicate.h"
 
 
 /*
@@ -79,8 +80,11 @@ gistvacuumcleanup(IndexVacuumInfo *info, IndexBulkDeleteResult *stats)
 
 		if (PageIsNew(page) || GistPageIsDeleted(page))
 		{
-			totFreePages++;
-			RecordFreeIndexPage(rel, blkno);
+			if (!PageIsPredicateLocked(rel, blkno))
+			{
+				totFreePages++;
+				RecordFreeIndexPage(rel, blkno);
+			}
 		}
 		UnlockReleaseBuffer(buffer);
 	}
