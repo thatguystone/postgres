@@ -1,0 +1,20 @@
+$ ./configure --prefix=`pwd`/__env --with-pgport=65432 --enable-cassert CFLAGS="-ggdb -Og -g3 -fno-omit-frame-pointer"
+
+$ ./bin/postgres --config-file=share/postgresql.conf -D data -c default_transaction_isolation=serializable
+
+gist:
+	* page-level pred locks
+
+stmt-level xacts:
+	* determine if read-only and set XactReadOnly when serializable
+
+	> variable.c:487@check_transaction_read_only()
+	> xact.c:2677@StartTransactionCommand()): executed before every cmd
+	> xact.c:4304@IsTransactionBlock(): if returns false, then inside a single-query transaction
+	> execMain.c:177@standard_ExecutorStart(): can probably use ExecCheckXactReadOnly to determine if query is r/o
+
+replication:
+	* serializable in WAL
+
+partitioned tables:
+	* `refute` when using mod (%)
