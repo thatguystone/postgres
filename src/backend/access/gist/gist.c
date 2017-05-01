@@ -486,6 +486,13 @@ gistplacetopage(Relation rel, Size freespace, GISTSTATE *giststate,
 		for (ptr = dist; ptr; ptr = ptr->next)
 		{
 			PageSetLSN(ptr->page, recptr);
+
+			// This is obviously quite stupid and probably wrong
+			if (BufferGetBlockNumber(buffer) != BufferGetBlockNumber(ptr->buffer)) {
+				PredicateLockPageSplit(rel,
+									   BufferGetBlockNumber(buffer),
+									   BufferGetBlockNumber(ptr->buffer));
+			}
 		}
 
 		/*
